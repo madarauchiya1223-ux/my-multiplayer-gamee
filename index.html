@@ -10,7 +10,7 @@
 input{user-select:text;-webkit-user-select:text;touch-action:auto}
 html,body{width:100%;height:100%;background:#06080d;color:#e8eef9;font:600 14px var(--bd);overflow:hidden;position:fixed;top:0;left:0}
 #c{position:absolute;top:0;left:0;width:100vw;height:100vh}
-.ov{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;background:rgba(3,5,10,.8);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:12px}
+.ov{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;background:rgba(3,5,10,.8);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
 .ov,.ov *{touch-action:pan-x pan-y}.ov>*{margin:auto}
 body.lowfx .ov{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(3,5,10,.93)}
 .pn{background:linear-gradient(160deg,rgba(20,29,47,.95),rgba(8,12,20,.95));border-left:3px solid var(--am);padding:16px;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
@@ -128,7 +128,8 @@ body.ed .cw{z-index:9999;cursor:grab}body.ed .cw.sel{outline:2px solid #fff;outl
 #rot{position:fixed;inset:0;z-index:40000;display:none;align-items:center;justify-content:center;background:#06080d;text-align:center;font:800 18px var(--hd);letter-spacing:2px;color:var(--am);line-height:1.8}
 #rot small{display:block;font:600 12px var(--bd);color:var(--mu);letter-spacing:1px}
 @media (orientation:portrait){body.run #rot{display:flex}}
-@media (max-width:760px){.lob{grid-template-columns:1fr}.lobb{grid-template-columns:1fr}.mid{display:none}.col3{max-height:none}}
+@media (max-width:760px){.lob{grid-template-columns:1fr}.lobb{grid-template-columns:1fr;width:min(96vw,560px)}.mid{display:none}.col3{max-height:none}
+ #rm .pn{width:100%;max-width:100%}}
 @media (max-width:640px){
  .ov{padding:8px}
  .pn{padding:12px;max-width:96vw;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -137,6 +138,9 @@ body.ed .cw{z-index:9999;cursor:grab}body.ed .cw.sel{outline:2px solid #fff;outl
  .bt{font-size:12px;padding:11px 12px}.bt.sm{padding:10px 4px;font-size:9px}.mbt{padding:12px;font-size:12px}
  .row2{flex-wrap:wrap}.row2 input{min-width:0;flex:1 1 120px}
  .lobb{gap:8px}.prg{gap:8px}
+ #rm .lobb{grid-template-columns:1fr;width:min(96vw,560px);align-items:stretch}
+ #rm .pn{width:100%;max-width:100%;max-height:none}
+ #rm .ov{justify-content:flex-start}
  #pvv{width:100%;max-width:260px;height:auto;aspect-ratio:220/240;margin:auto}
  #pv{max-width:100%}
  .seg b,.tabs b{min-width:58px;font-size:10px}
@@ -668,14 +672,21 @@ function dmgP(d,by,vx,vy,wn,src){
 /* ---------- LOOT ---------- */
 const PC={gn:0,hp:1,gr:2,sh:3},PCI=['gn','hp','gr','sh'];
 function addPick(t,x,y,o){picks.push(Object.assign({id:++PID,t,x,y,vx:0,vy:0,rot:0,vr:0,on:false,life:t==='gn'?2100:1500,cd:0,g:'m4a1',am:0},o))}
-const gunAm=g=>Math.max(GUNS[g].mag,Math.round(GUNS[g].mag*1.5));
+const gunAm=g=>Math.max(GUNS[g].mag,Math.round(GUNS[g].mag*2.5));
 const noGuns=()=>!!(MP&&MP.mode==='gg');
 function dropLoot(e){
  const T=BT[e.k],gn=e.gn||T.gun,r=Math.random(),sp=()=>(Math.random()-.5)*5;
- if(T.boss){if(!noGuns())addPick('gn',e.x,e.y-12,{g:gn,am:GUNS[gn].mag*2,vx:sp(),vy:-4,vr:sp()*.15});addPick('hp',e.x,e.y-12,{vx:sp(),vy:-3});return}
- if(r<.55&&!noGuns())addPick('gn',e.x,e.y-12,{g:gn,am:gunAm(gn),vx:sp(),vy:-3-Math.random()*2,vr:sp()*.15});
- else if(r<.72)addPick('hp',e.x,e.y-12,{vx:sp(),vy:-3});
- else if(r<.85)addPick('gr',e.x,e.y-12,{vx:sp(),vy:-3});
+ const gAmmo=g=>Math.max(GUNS[g].mag*2,Math.round(GUNS[g].mag*2.5));
+ if(T.boss){if(!noGuns())addPick('gn',e.x,e.y-12,{g:gn,am:gAmmo(gn),vx:sp(),vy:-4,vr:sp()*.15});addPick('hp',e.x,e.y-12,{vx:sp(),vy:-3});return}
+ if(T.heavy||T.boss||GUNS[gn].mag>=30){/* heavy guns always drop plenty of ammo */
+  if(!noGuns())addPick('gn',e.x,e.y-12,{g:gn,am:gAmmo(gn),vx:sp(),vy:-3-Math.random()*2,vr:sp()*.15});
+  if(r<.4)addPick('hp',e.x,e.y-12,{vx:sp(),vy:-3});
+  return
+ }
+ if(r<.62&&!noGuns())addPick('gn',e.x,e.y-12,{g:gn,am:gAmmo(gn),vx:sp(),vy:-3-Math.random()*2,vr:sp()*.15});
+ else if(r<.78)addPick('hp',e.x,e.y-12,{vx:sp(),vy:-3});
+ else if(r<.90)addPick('gr',e.x,e.y-12,{vx:sp(),vy:-3});
+ else if(!noGuns())addPick('gn',e.x,e.y-12,{g:'pistol',am:999,vx:sp(),vy:-3});  /* fallback: pistol has infinite reserve */
 }
 function spawnSupply(){
  if(picks.length>=16)return;
@@ -823,8 +834,18 @@ function update(){
  const H0=!MP||MP.host;
  if(P.hp<=0&&!dead){
   dead=true;P.dt=deathText();P.dtF=frame;P.shUp=false;snd('die');near=null;if(bkShown){bkShown=false;$('bk').classList.remove('show')}if(bqShown){bqShown=false;$('bq').classList.remove('show')}
+  /* drop carried weapons + shield on death (solo) so loot stays in the world */
+  {const dp=(g,a)=>{if(g&&g!=='pistol'&&a>0)addPick('gn',P.x+(Math.random()-.5)*24,P.y-14,{g,am:a,vx:(Math.random()-.5)*4,vy:-3,vr:.2,cd:50})};
+   for(const s of P.sl)if(s.r!==Infinity)dp(s.g,s.a+(s.r||0));
+   if(P.oh&&P.oh.r!==Infinity)dp(P.oh.g,P.oh.a+(P.oh.r||0));
+   if(P.sh>0)addPick('sh',P.x,P.y-14,{am:P.sh,vx:(Math.random()-.5)*4,vy:-3})}
   if(MP){
    P.rt=MP.mode==='qj'?300:180;const by=P.lby;
+   /* drop carried weapons + shield on death so others can pick them up */
+   if(P.hp<=0){const dp=(g,a,x,y)=>{if(a>0)dropItem('gn',g,a,x,y,(Math.random()-.5)*4,-3)};
+    for(const s of P.sl)if(s.g&&s.g!=='pistol'&&s.r!==Infinity)dp(s.g,s.a+(s.r||0),P.x+(Math.random()-.5)*24,P.y-14);
+    if(P.oh&&P.oh.g&&P.oh.r!==Infinity)dp(P.oh.g,P.oh.a+(P.oh.r||0),P.x+(Math.random()-.5)*24,P.y-14);
+    if(P.sh>0)dropItem('sh','',P.sh,P.x,P.y-14,(Math.random()-.5)*4,-3)}
    if(pvp()&&by&&by!==MK){if(MP.host){SC[by]=(SC[by]||0)+1;kfeed(by,MK)}else ev({e:'x',by})}
   }else{
    $('fk').textContent=P.score;$('fw').textContent=wave;$('fb').textContent=Math.max(BK,P.score);$('dc').textContent=P.dt;
