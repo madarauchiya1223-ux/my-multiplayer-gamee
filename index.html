@@ -10,7 +10,9 @@
 input{user-select:text;-webkit-user-select:text;touch-action:auto}
 html,body{width:100%;height:100%;background:#06080d;color:#e8eef9;font:600 14px var(--bd);overflow:hidden;position:fixed;top:0;left:0}
 #c{position:absolute;top:0;left:0;width:100vw;height:100vh}
-.ov{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;background:rgba(3,5,10,.8);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.ov{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:flex-start;z-index:100;background:rgba(3,5,10,.8);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+/* NOTE: justify-content:flex-start + margin:auto child = scroll-safe centering.
+   With justify-content:center a tall panel gets clipped at the TOP on mobile landscape (unreachable) */
 .ov,.ov *{touch-action:pan-x pan-y}.ov>*{margin:auto}
 body.lowfx .ov{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(3,5,10,.93)}
 .pn{background:linear-gradient(160deg,rgba(20,29,47,.95),rgba(8,12,20,.95));border-left:3px solid var(--am);padding:16px;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
@@ -152,6 +154,22 @@ body.ed .cw{z-index:9999;cursor:grab}body.ed .cw.sel{outline:2px solid #fff;outl
 }
 @media (max-width:400px){.mlay{grid-template-columns:1fr}.mleft{display:flex;flex-direction:row;justify-content:center;gap:10px}#av{width:76px;height:96px}.mright{display:none}}
 @media (max-height:460px){.keys{display:none}.logo h1{font-size:24px}.bt{padding:9px 12px;margin-top:7px}}
+/* LANDSCAPE phones: screen is short — compact every overlay so nothing clips at the top */
+@media (max-height:520px){
+ .ov{padding:6px}
+ .pn{padding:10px 12px}
+ .ti{font-size:15px;margin-bottom:6px;padding-bottom:4px;letter-spacing:2px}
+ .fl{margin:6px 0 3px;font-size:9px}
+ .hint{font-size:11px;margin:6px 0 2px}
+ .bt{padding:9px 10px;margin-top:6px;font-size:11px}
+ .bt.sm{padding:8px 4px;font-size:9px}
+ .chb{height:64px;font-size:11px}
+ .gc,.oc{padding:4px;font-size:9px}
+ #rcode{font-size:14px;letter-spacing:2px}
+ .stats3{padding:6px}.stats3 b{font-size:16px}
+ #rm .pn{max-height:calc(100vh - 20px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+ .mlay .pn{padding:8px}
+}
 </style>
 <style>
 body{background:#070a10}
@@ -495,6 +513,9 @@ function resize(){
  if(run&&!MP&&!paused&&H>W)pause();
 }
 addEventListener('resize',resize);addEventListener('orientationchange',()=>setTimeout(resize,200));
+document.addEventListener('fullscreenchange',()=>setTimeout(resize,150));
+document.addEventListener('webkitfullscreenchange',()=>setTimeout(resize,150));
+window.addEventListener('visualViewport resize',()=>{if(!run||MP)resize()})
 function setQ(v){ql=Math.max(0,Math.min(2,v));try{LS.setItem('mm_q',String(ql))}catch(e){}document.body.classList.toggle('lowfx',ql===2);resize()}
 
 /* ---------- SOUND ---------- */
